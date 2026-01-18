@@ -192,8 +192,6 @@ pause_btn = tk.Button(controls, text="⏸️ Pause", command=pause_audio)
 pause_btn.pack(side="left", padx=5)
 
 
-#hello
-
 status_label = tk.Label(root, text="No file selected")
 status_label.pack()
 
