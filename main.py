@@ -3,12 +3,26 @@ import subprocess
 import sys
 import os
 
+VOICE_OPTIONS = {
+    "Calm Male": "j9t3Yvh3vBwrHcn0bucs",
+    "Warm Female": "s3gcxx3ITgo2NhnGkx27",
+    "Storyteller": "cMrQcbcgpMlTZoEWG4zw",
+    "Horror": "lwYLo90MsFbMuBdTlEPh"
+}
+
+
 def launch_app():
-    # Close main window
+    selected_voice_name = voice_var.get()
+    selected_voice_id = VOICE_OPTIONS[selected_voice_name]
+
     root.destroy()
 
-    # Launch app.py using same Python interpreter
-    subprocess.Popen([sys.executable, "app.py"])
+    subprocess.Popen([
+        sys.executable,
+        "app.py",
+        selected_voice_id
+    ])
+
 
 root = tk.Tk()
 root.title("AI Narration App")
@@ -32,6 +46,31 @@ subtitle = tk.Label(
     bg="#1e1e1e"
 )
 subtitle.pack(pady=10)
+
+voice_var = tk.StringVar(value="Calm Male")
+
+voice_label = tk.Label(
+    root,
+    text="Choose Narrator Voice:",
+    font=("Helvetica", 12),
+    fg="white",
+    bg="#1e1e1e"
+)
+voice_label.pack(pady=(30, 5))
+
+voice_menu = tk.OptionMenu(
+    root,
+    voice_var,
+    *VOICE_OPTIONS.keys()
+)
+voice_menu.config(
+    font=("Helvetica", 12),
+    bg="#333333",
+    fg="white",
+    highlightthickness=0
+)
+voice_menu.pack()
+
 
 start_btn = tk.Button(
     root,

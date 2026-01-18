@@ -6,6 +6,9 @@ import threading
 import pygame
 import os
 from mutagen.mp3 import MP3
+import sys
+
+VOICE_ID = sys.argv[1] if len(sys.argv) > 1 else "j9t3Yvh3vBwrHcn0bucs"
 
 
 is_paused = False
@@ -28,7 +31,7 @@ def generate_and_play_audio(text):
 
     audio = client.text_to_speech.convert(
         text=text,
-        voice_id="JBFqnCBsd6RMkjVDRZzb",
+        voice_id=VOICE_ID,
         model_id="eleven_multilingual_v2",
         output_format="mp3_44100_128",
     )
@@ -69,7 +72,7 @@ def upload_file():
         return
 
 
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, 'r', encoding='utf-8', errors="replace") as file:
         text = file.read()
 
 
@@ -83,7 +86,7 @@ def upload_file():
 
     threading.Thread(
         target=generate_and_play_audio,
-        args=(text,),
+        args=(text, ),
         daemon=True
     ).start()
 
