@@ -13,6 +13,7 @@ audio_started = threading.Event()
 word_delay_ms = 180
 current_highlight = None
 
+
 # ---------- Setup ----------
 load_dotenv()
 client = ElevenLabs(api_key=os.getenv("API_KEY"))
