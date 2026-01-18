@@ -64,7 +64,7 @@ def play_audio_ui(speaker, text, audio_file):
 
     status_label.config(text=f"{speaker} speaking 🎙️")
     speak_words()
-    monitor_audio(audio_file)
+    monitor_audio()
 
 
 
@@ -76,7 +76,7 @@ def run_quote(speaker, text):
         root.after(0, lambda: play_audio_ui(speaker, text, audio_file))
 
     threading.Thread(target=task, daemon=True).start()
-S
+
 
 
 # ---------- SEQUENCE ----------
