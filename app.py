@@ -8,7 +8,6 @@ import os
 from mutagen.mp3 import MP3
 from PIL import Image, ImageTk
 
-
 # ---------- Global State ----------
 is_paused = False
 audio_started = threading.Event()
@@ -17,6 +16,35 @@ current_highlight = None
 words = []
 word_index = 0
 bg_photo = None
+
+# ---------- Themes ----------
+THEMES = {
+    "cozy": {
+        "bg": "#2b1f1a",
+        "fg": "#f5e6d3",
+        "highlight": "#d9a441"
+    },
+    "sunny": {
+        "bg": "#fff7cc",
+        "fg": "#333333",
+        "highlight": "#ffd966"
+    },
+    "rainy": {
+        "bg": "#1e1e2e",
+        "fg": "#dcdcdc",
+        "highlight": "#5dade2"
+    },
+    "love": {
+        "bg": "#3a1f2b",
+        "fg": "#ffd6e8",
+        "highlight": "#ff6fa5"
+    },
+    "sad": {
+        "bg": "#1a1a1a",
+        "fg": "#b0b0b0",
+        "highlight": "#6c7a89"
+    }
+}
 
 # ---------- Setup ----------
 load_dotenv()
@@ -47,7 +75,6 @@ def generate_and_play_audio(text):
     pygame.mixer.music.load("output.mp3")
     pygame.mixer.music.play()
     audio_started.set()
-
 
 # ---------- File Upload ----------
 def upload_file():
@@ -80,14 +107,12 @@ def upload_file():
 
     check_audio_started()
 
-
 def check_audio_started():
     if audio_started.is_set():
         status_label.config(text="AI is speaking 🎧")
         speak_words()
     else:
         root.after(50, check_audio_started)
-
 
 # ---------- Text Highlight ----------
 def speak_words():
@@ -108,14 +133,18 @@ def speak_words():
         text_box.tag_remove("highlight", current_highlight[0], current_highlight[1])
 
     text_box.tag_add("highlight", start, end)
-    text_box.tag_config("highlight", background="yellow")
+    current_theme = current_theme_name.get()
+    text_box.tag_config(
+        "highlight",
+        background=THEMES[current_theme]["highlight"],
+        foreground=THEMES[current_theme]["fg"]
+    )
 
     current_highlight = (start, end)
     text_box.see(tk.END)
 
     word_index += 1
     root.after(word_delay_ms, speak_words)
-
 
 # ---------- Controls ----------
 def start_audio():
@@ -126,7 +155,6 @@ def start_audio():
         status_label.config(text="AI speaking ▶️")
         speak_words()
 
-
 def pause_audio():
     global is_paused
     if pygame.mixer.music.get_busy():
@@ -134,23 +162,39 @@ def pause_audio():
         is_paused = True
         status_label.config(text="Paused ⏸️")
 
-
 # ---------- Tkinter UI ----------
 root = tk.Tk()
 root.title("AI Reader")
 root.geometry("1200x1200")
+
+# Track current theme
+current_theme_name = tk.StringVar(value="cozy")
 
 # ---------- Background ----------
 bg_label = tk.Label(root)
 bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 bg_label.lower()
 
-def set_background(image_path):
+def set_background(image_path, theme_name):
     global bg_photo
+    current_theme_name.set(theme_name)
+
     img = Image.open(image_path)
     img = img.resize((root.winfo_width(), root.winfo_height()), Image.LANCZOS)
     bg_photo = ImageTk.PhotoImage(img)
     bg_label.config(image=bg_photo)
+
+    theme = THEMES[theme_name]
+    text_box.config(
+        bg=theme["bg"],
+        fg=theme["fg"],
+        insertbackground=theme["fg"]
+    )
+    text_box.tag_config(
+        "highlight",
+        background=theme["highlight"],
+        foreground=theme["fg"]
+    )
 
 # ---------- Widgets ----------
 upload_btn = tk.Button(root, text="Upload File", command=upload_file)
@@ -159,48 +203,42 @@ upload_btn.pack(pady=10)
 controls = tk.Frame(root)
 controls.pack(pady=10)
 
-start_btn = tk.Button(controls, text="▶️ Start / Resume", command=start_audio)
-start_btn.pack(side="left", padx=5)
+tk.Button(controls, text="▶️ Start / Resume", command=start_audio).pack(side="left", padx=5)
+tk.Button(controls, text="⏸️ Pause", command=pause_audio).pack(side="left", padx=5)
 
-pause_btn = tk.Button(controls, text="⏸️ Pause", command=pause_audio)
-pause_btn.pack(side="left", padx=5)
-
-bg1_btn = tk.Button(
+tk.Button(
     controls, text="Cozy",
-    command=lambda: set_background("images/bruh.jpg")
+    command=lambda: set_background("images/bruh.jpg", "cozy")
+).pack(side="left", padx=5)
 
-)
-bg1_btn.pack(side="left", padx=5)
-
-bg2_btn = tk.Button(
+tk.Button(
     controls, text="Sunny",
-    command=lambda: set_background("images/sunny.jpeg")
-)
-bg2_btn.pack(side="left", padx=5)
+    command=lambda: set_background("images/sunny.jpeg", "sunny")
+).pack(side="left", padx=5)
 
-bg3_btn = tk.Button(
+tk.Button(
     controls, text="Rainy",
-    command=lambda: set_background("images/rainy.jpeg")
-)
-bg3_btn.pack(side="left", padx=5)
+    command=lambda: set_background("images/rainy.jpeg", "rainy")
+).pack(side="left", padx=5)
 
-bg4_btn = tk.Button(
+tk.Button(
     controls, text="Love",
-    command=lambda: set_background("images/love.jpeg")
-)
-bg4_btn.pack(side="left", padx=5)
+    command=lambda: set_background("images/love.jpeg", "love")
+).pack(side="left", padx=5)
 
-bg5_btn = tk.Button(
+tk.Button(
     controls, text="Sad",
-    command=lambda: set_background("images/sad.jpeg")
-)
-bg5_btn.pack(side="left", padx=5)
+    command=lambda: set_background("images/sad.jpeg", "sad")
+).pack(side="left", padx=5)
 
 status_label = tk.Label(root, text="No file selected")
 status_label.pack()
 
 text_box = tk.Text(root, wrap="word", height=5)
-text_box.pack(padx=250, pady=30, fill=None, expand=False)
+text_box.pack(padx=250, pady=30)
+
+# ---------- Default Theme ----------
+set_background("images/bruh.jpg", "cozy")
 
 # ---------- Start ----------
 root.mainloop()
