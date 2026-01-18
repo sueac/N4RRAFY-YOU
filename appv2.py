@@ -76,20 +76,15 @@ def run_quote(speaker, text):
         root.after(0, lambda: play_audio_ui(speaker, text, audio_file))
 
     threading.Thread(target=task, daemon=True).start()
-
+S
 
 
 # ---------- SEQUENCE ----------
-def monitor_audio(audio_file):
+def monitor_audio():
     if pygame.mixer.music.get_busy():
-        root.after(100, lambda: monitor_audio(audio_file))
+        root.after(100, monitor_audio)
     else:
-        try:
-            os.remove(audio_file)
-        except:
-            pass
         next_quote()
-
 
 
 def next_quote():
